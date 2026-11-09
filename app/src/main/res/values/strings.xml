@@ -1,4 +1,4 @@
-﻿<resources>
+<resources>
     <string name="app_name">Fortnite</string>
     <style name="Theme.Fortnite" parent="@android:style/Theme.DeviceDefault.NoActionBar">
         <item name="android:windowFullscreen">true</item>
