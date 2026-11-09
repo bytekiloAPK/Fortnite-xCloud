@@ -23,10 +23,18 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         enterFullscreen();
-
         webView = new WebView(this);
         setContentView(webView);
+        setupWebView();
+        if (savedInstanceState == null) {
+            webView.loadUrl(FORTNITE_URL);
+        } else {
+            webView.restoreState(savedInstanceState);
+        }
+    }
 
+    @SuppressLint("SetJavaScriptEnabled")
+    private void setupWebView() {
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
@@ -34,35 +42,52 @@ public class MainActivity extends Activity {
         settings.setMediaPlaybackRequiresUserGesture(false);
         settings.setLoadsImagesAutomatically(true);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
-        settings.setUserAgentString(settings.getUserAgentString().replace("; wv", ""));
+        settings.setSupportMultipleWindows(false);
+        settings.setJavaScriptCanOpenWindowsAutomatically(false);
+        settings.setCacheMode(WebSettings.LOAD_DEFAULT);
+        try {
+            settings.setUserAgentString(settings.getUserAgentString().replace("; wv", ""));
+        } catch (Exception ignored) {
+        }
 
         CookieManager cookieManager = CookieManager.getInstance();
         cookieManager.setAcceptCookie(true);
         cookieManager.setAcceptThirdPartyCookies(webView, true);
-        // Keep cookies only for the current app session; clear on close to avoid storing account login.
 
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-                String url = request.getUrl().toString();
-                view.loadUrl(url);
+                try {
+                    view.loadUrl(request.getUrl().toString());
+                } catch (Exception ignored) {
+                }
                 return true;
             }
 
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                // Keep navigation inside the WebView (including Microsoft login redirects).
-                // Do not auto-finish on redirects; xCloud/Fortnite flow changes URLs frequently.
+            }
+
+            @Override
+            public boolean onRenderProcessGone(WebView view, android.webkit.RenderProcessGoneDetail detail) {
+                try {
+                    if (webView != null) {
+                        webView.destroy();
+                    }
+                } catch (Exception ignored) {
+                }
+                try {
+                    webView = new WebView(MainActivity.this);
+                    setContentView(webView);
+                    setupWebView();
+                    webView.loadUrl(FORTNITE_URL);
+                } catch (Exception ignored) {
+                }
+                return true;
             }
         });
         webView.setWebChromeClient(new WebChromeClient());
-
-        if (savedInstanceState == null) {
-            webView.loadUrl(FORTNITE_URL);
-        } else {
-            webView.restoreState(savedInstanceState);
-        }
     }
 
     private void enterFullscreen() {
