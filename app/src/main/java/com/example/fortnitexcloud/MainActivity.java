@@ -17,7 +17,6 @@ import android.webkit.WebViewClient;
 public class MainActivity extends Activity {
     private static final String FORTNITE_URL = "https://play.xbox.com/products/BT5P2X999VH2/fortnite";
     private WebView webView;
-    private boolean hasReachedFortnite = false;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -53,20 +52,8 @@ public class MainActivity extends Activity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                if (url == null) return;
-                boolean inFortniteProduct = url.contains("/products/BT5P2X999VH2/fortnite") || url.contains("BT5P2X999VH2");
-                boolean inGameStream = (url.contains("/play/launch/") || url.contains("/play/")) && url.contains("BT5P2X999VH2");
-                if (inFortniteProduct || inGameStream) {
-                    hasReachedFortnite = true;
-                    return;
-                }
-                if (hasReachedFortnite) {
-                    // If the xCloud/Fortnite flow ends and navigation leaves that product/stream, close the app.
-                    boolean stillFortniteFlow = url.contains("BT5P2X999VH2") || url.toLowerCase().contains("fortnite");
-                    if (!stillFortniteFlow) {
-                        finish();
-                    }
-                }
+                // Keep navigation inside the WebView (including Microsoft login redirects).
+                // Do not auto-finish on redirects; xCloud/Fortnite flow changes URLs frequently.
             }
         });
         webView.setWebChromeClient(new WebChromeClient());
