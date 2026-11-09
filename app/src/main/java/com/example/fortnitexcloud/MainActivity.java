@@ -1,4 +1,4 @@
-﻿package com.example.fortnitexcloud;
+package com.example.fortnitexcloud;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
